@@ -52,12 +52,6 @@ python merge_tp_params.py --model_name_or_path outputs/checkpoint-30
 
 ## 评估
 
-安装依赖
-
-```
-pip install -r requirements.txt
-```
-
 评估脚本：
 
 ```
