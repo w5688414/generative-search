@@ -2,6 +2,12 @@
 
 ## 安装
 
+推荐安装gpu版本的[PaddlePalle](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/linux-pip.html)，安装命令如下：
+
+```
+python -m pip install paddlepaddle-gpu==2.6.0.post117 -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html
+```
+安装其他依赖：
 ```
 pip install -r requirements.txt
 ```
