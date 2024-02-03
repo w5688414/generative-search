@@ -17,7 +17,7 @@ pip install -r requirements.txt
 ### 单卡训练
 
 ```
-python run.py --do_train \
+python train.py --do_train \
               --model_name_or_path bigscience/bloomz-7b1-mt \
               --output_dir ./checkpoints \
               --train_data ./data/toy_finetune_data.jsonl \
@@ -31,7 +31,7 @@ python run.py --do_train \
 ### 多卡训练
 
 ```
-python -m paddle.distributed.launch --gpus "4,5,6,7" run.py \
+python -m paddle.distributed.launch --gpus "4,5,6,7" train.py \
         --do_train \
         --model_name_or_path bigscience/bloomz-7b1-mt  \
         --num_train_epochs 10 --per_device_train_batch_size 4 \
