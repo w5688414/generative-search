@@ -26,18 +26,30 @@ class ModelArguments:
     """
 
     model_name_or_path: str = field(
-        metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"}
+        metadata={
+            "help": "Path to pretrained model or model identifier from huggingface.co/models"
+        }
     )
     tokenizer_name: Optional[str] = field(
-        default=None, metadata={"help": "Pretrained tokenizer name or path if not the same as model_name"}
+        default=None,
+        metadata={
+            "help": "Pretrained tokenizer name or path if not the same as model_name"
+        },
     )
     cache_dir: Optional[str] = field(
-        default=None, metadata={"help": "Where do you want to store the pretrained models downloaded from s3"}
+        default=None,
+        metadata={
+            "help": "Where do you want to store the pretrained models downloaded from s3"
+        },
     )
 
     normalized: bool = field(default=True)
-    use_flash_attention: bool = field(default=False, metadata={"help": "Whether to use flash attention"})
-    is_batch_negative: bool = field(default=False, metadata={"help": "Whethe to use in batch negative training"})
+    use_flash_attention: bool = field(
+        default=False, metadata={"help": "Whether to use flash attention"}
+    )
+    is_batch_negative: bool = field(
+        default=False, metadata={"help": "Whethe to use in batch negative training"}
+    )
 
 
 @dataclass
@@ -62,25 +74,38 @@ class DataArguments:
     )
 
     max_example_num_per_dataset: int = field(
-        default=100000000, metadata={"help": "the max number of examples for each dataset"}
+        default=100000000,
+        metadata={"help": "the max number of examples for each dataset"},
     )
 
-    query_instruction_for_retrieval: str = field(default=None, metadata={"help": "instruction for query"})
-    passage_instruction_for_retrieval: str = field(default=None, metadata={"help": "instruction for passage"})
+    query_instruction_for_retrieval: str = field(
+        default=None, metadata={"help": "instruction for query"}
+    )
+    passage_instruction_for_retrieval: str = field(
+        default=None, metadata={"help": "instruction for passage"}
+    )
 
     def __post_init__(self):
         if not os.path.exists(self.train_data):
-            raise FileNotFoundError(f"cannot find file: {self.train_data}, please set a true path")
+            raise FileNotFoundError(
+                f"cannot find file: {self.train_data}, please set a true path"
+            )
 
 
 @dataclass
 class RetrieverTrainingArguments(TrainingArguments):
-    negatives_cross_device: bool = field(default=False, metadata={"help": "share negatives across devices"})
+    negatives_cross_device: bool = field(
+        default=False, metadata={"help": "share negatives across devices"}
+    )
     temperature: Optional[float] = field(default=0.02)
     fix_position_embedding: bool = field(
         default=False, metadata={"help": "Freeze the parameters of position embeddings"}
     )
     sentence_pooling_method: str = field(
-        default="weighted_mean", metadata={"help": "the pooling method, should be weighted_mean"}
+        default="weighted_mean",
+        metadata={"help": "the pooling method, should be weighted_mean"},
     )
-    fine_tune_type: str = field(default="sft", metadata={"help": "fine-tune type for retrieval,eg: sft, bitfit, lora"})
+    fine_tune_type: str = field(
+        default="sft",
+        metadata={"help": "fine-tune type for retrieval,eg: sft, bitfit, lora"},
+    )

@@ -14,13 +14,13 @@
 
 import paddle
 import paddle.nn.functional as F
-from arguments import DataArguments, ModelArguments
-from arguments import RetrieverTrainingArguments as TrainingArguments
-from modeling import BloomBiEncoderModel
-
 from paddlenlp.trainer import PdArgumentParser
 from paddlenlp.transformers import AutoTokenizer
 from paddlenlp.utils.log import logger
+
+from arguments import DataArguments, ModelArguments
+from arguments import RetrieverTrainingArguments as TrainingArguments
+from modeling import BloomBiEncoderModel
 
 
 def main():
@@ -37,7 +37,9 @@ def main():
         use_flash_attention=model_args.use_flash_attention,
     )
     tokenizer = AutoTokenizer.from_pretrained(
-        model_args.tokenizer_name if model_args.tokenizer_name else model_args.model_name_or_path,
+        model_args.tokenizer_name
+        if model_args.tokenizer_name
+        else model_args.model_name_or_path,
         cache_dir=model_args.cache_dir,
         use_fast=False,
     )

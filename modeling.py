@@ -18,14 +18,10 @@ from typing import Dict, Optional
 import paddle
 import paddle.distributed as dist
 import paddle.nn as nn
-
-from paddlenlp.transformers import (
-    BloomConfig,
-    LlamaConfig,
-    LlamaModel,
-    LlamaPretrainedModel,
-)
-from paddlenlp.transformers.bloom.modeling import BloomModel, BloomPreTrainedModel
+from paddlenlp.transformers import (BloomConfig, LlamaConfig, LlamaModel,
+                                    LlamaPretrainedModel)
+from paddlenlp.transformers.bloom.modeling import (BloomModel,
+                                                   BloomPreTrainedModel)
 from paddlenlp.transformers.model_outputs import ModelOutput
 from paddlenlp.utils.log import logger
 
@@ -61,12 +57,16 @@ class BloomBiEncoderModel(BloomPreTrainedModel):
         self.margin = margin
         if not normalized:
             self.temperature = 1.0
-            logger.info("reset temperature = 1.0 due to using inner product to compute similarity")
+            logger.info(
+                "reset temperature = 1.0 due to using inner product to compute similarity"
+            )
 
         self.negatives_cross_device = negatives_cross_device
         if self.negatives_cross_device:
             if not dist.is_initialized():
-                raise ValueError("Distributed training has not been initialized for representation all gather.")
+                raise ValueError(
+                    "Distributed training has not been initialized for representation all gather."
+                )
             #     logger.info("Run in a single GPU, set negatives_cross_device=False")
             #     self.negatives_cross_device = False
             # else:
@@ -81,11 +81,18 @@ class BloomBiEncoderModel(BloomPreTrainedModel):
             # Use weighted mean to compute similarity for decoder only LLMs
             # refer to https://github.com/Muennighoff/sgpt/blob/9728de441b1dd2e638a8a64e1c83f77716f47d9a/biencoder/beir/beir_dense_retriever.py#L258
             # 1,2,3...seq_len
-            weights = self.labels[1 : hidden_state.shape[1] + 1].unsqueeze(0).unsqueeze(-1).expand(hidden_state.shape)
+            weights = (
+                self.labels[1 : hidden_state.shape[1] + 1]
+                .unsqueeze(0)
+                .unsqueeze(-1)
+                .expand(hidden_state.shape)
+            )
             # [batch_size, seq_len] -> [batch_size, seq_len, higgen_dim]
             input_mask_expanded = mask.unsqueeze(-1).expand(hidden_state.shape)
             # bs, seq_len, hidden_dim -> bs, hidden_dim
-            sum_embeddings = paddle.sum(hidden_state * input_mask_expanded * weights, axis=1, dtype="float32")
+            sum_embeddings = paddle.sum(
+                hidden_state * input_mask_expanded * weights, axis=1, dtype="float32"
+            )
             sum_mask = paddle.sum(input_mask_expanded * weights, axis=1)
             embedding = sum_embeddings / sum_mask
             return embedding
@@ -94,7 +101,9 @@ class BloomBiEncoderModel(BloomPreTrainedModel):
         if features is None:
             return None
         psg_out = self.bloom(**features, return_dict=True)
-        p_reps = self.sentence_embedding(psg_out.last_hidden_state, features["attention_mask"])
+        p_reps = self.sentence_embedding(
+            psg_out.last_hidden_state, features["attention_mask"]
+        )
         if self.normalized:
             p_reps = paddle.nn.functional.normalize(p_reps, axis=-1)
         return p_reps
@@ -122,7 +131,9 @@ class BloomBiEncoderModel(BloomPreTrainedModel):
                 # In batch negatives
                 scores = self.compute_similarity(q_reps, p_reps)
                 # Substract margin from all positive samples cosine_sim()
-                margin_diag = paddle.full(shape=[q_reps.shape[0]], fill_value=self.margin, dtype=q_reps.dtype)
+                margin_diag = paddle.full(
+                    shape=[q_reps.shape[0]], fill_value=self.margin, dtype=q_reps.dtype
+                )
                 scores = scores - paddle.diag(margin_diag)
                 # Scale cosine to ease training converge
                 scores = scores / self.temperature
@@ -187,14 +198,20 @@ class LlamaBiEncoderModel(LlamaPretrainedModel):
         self.margin = margin
         if not normalized:
             self.temperature = 1.0
-            logger.info("reset temperature = 1.0 due to using inner product to compute similarity")
+            logger.info(
+                "reset temperature = 1.0 due to using inner product to compute similarity"
+            )
 
         self.negatives_cross_device = negatives_cross_device
         if self.negatives_cross_device:
             if not dist.is_initialized():
-                raise ValueError("Distributed training has not been initialized for representation all gather.")
+                raise ValueError(
+                    "Distributed training has not been initialized for representation all gather."
+                )
             if config.tensor_parallel_degree > 1:
-                raise ValueError("Tensor parallelism does not support cross batch negatives.")
+                raise ValueError(
+                    "Tensor parallelism does not support cross batch negatives."
+                )
 
             #     logger.info("Run in a single GPU, set negatives_cross_device=False")
             #     self.negatives_cross_device = False
@@ -215,7 +232,9 @@ class LlamaBiEncoderModel(LlamaPretrainedModel):
             # [batch_size, seq_len] -> [batch_size, seq_len, higgen_dim]
             input_mask_expanded = mask.unsqueeze(-1).expand(hidden_state.shape)
             # bs, seq_len, hidden_dim -> bs, hidden_dim
-            sum_embeddings = paddle.sum(hidden_state * input_mask_expanded * weights, axis=1, dtype="float32")
+            sum_embeddings = paddle.sum(
+                hidden_state * input_mask_expanded * weights, axis=1, dtype="float32"
+            )
             sum_mask = paddle.sum(input_mask_expanded * weights, axis=1)
             embedding = sum_embeddings / sum_mask
         else:
@@ -226,7 +245,9 @@ class LlamaBiEncoderModel(LlamaPretrainedModel):
 
     def encode(self, features):
         psg_out = self.llama(**features, return_dict=True)
-        p_reps = self.sentence_embedding(psg_out.last_hidden_state, features["attention_mask"])
+        p_reps = self.sentence_embedding(
+            psg_out.last_hidden_state, features["attention_mask"]
+        )
         if self.normalized:
             p_reps = paddle.nn.functional.normalize(p_reps, axis=-1)
         return p_reps
@@ -254,7 +275,9 @@ class LlamaBiEncoderModel(LlamaPretrainedModel):
                 # In batch negatives
                 scores = self.compute_similarity(q_reps, p_reps)
                 # Substract margin from all positive samples cosine_sim()
-                margin_diag = paddle.full(shape=[q_reps.shape[0]], fill_value=self.margin, dtype=q_reps.dtype)
+                margin_diag = paddle.full(
+                    shape=[q_reps.shape[0]], fill_value=self.margin, dtype=q_reps.dtype
+                )
                 scores = scores - paddle.diag(margin_diag)
                 # Scale cosine to ease training converge
                 scores = scores / self.temperature

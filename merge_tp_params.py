@@ -14,19 +14,27 @@
 import os
 
 import paddle
-from modeling import BloomBiEncoderModel, LlamaBiEncoderModel
-
 from paddlenlp.transformers import BloomConfig, LlamaConfig
 from paddlenlp.utils.log import logger
+
+from modeling import BloomBiEncoderModel, LlamaBiEncoderModel
 
 
 def parse_arguments():
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_name_or_path", default=None, required=True, help="The directory of model.")
     parser.add_argument(
-        "--model_type", choices=["bloom", "llama", "baichuan"], default="bloom", help="The model types"
+        "--model_name_or_path",
+        default=None,
+        required=True,
+        help="The directory of model.",
+    )
+    parser.add_argument(
+        "--model_type",
+        choices=["bloom", "llama", "baichuan"],
+        default="bloom",
+        help="The model types",
     )
     parser.add_argument("--device", type=str, default="gpu", help="Device")
     return parser.parse_args()
@@ -58,8 +66,12 @@ def merge_tensor_parallel(model_class, state_dict_list, config) -> None:
         input_dir (str | None): the input dir which contains `pytorch_model.bin` and `config.json` file
         config (PretrainedConfig): the PretrainedConfig instance of model
     """
-    name_action_mappings = model_class._get_tensor_parallel_mappings(config, is_split=False)
-    state_keys_map = model_class._resolve_prefix_keys(name_action_mappings.keys(), state_dict_list[0].keys())
+    name_action_mappings = model_class._get_tensor_parallel_mappings(
+        config, is_split=False
+    )
+    state_keys_map = model_class._resolve_prefix_keys(
+        name_action_mappings.keys(), state_dict_list[0].keys()
+    )
 
     for k, v in state_keys_map.items():
         name_action_mappings[v] = name_action_mappings.pop(k)
@@ -76,7 +88,9 @@ def merge_tensor_parallel(model_class, state_dict_list, config) -> None:
 
     if len(name_action_mappings) > 0:
         for x in name_action_mappings.keys():
-            logger.warning(f"key <{x}> need to merge tensor parallel but we can't find in model state.")
+            logger.warning(
+                f"key <{x}> need to merge tensor parallel but we can't find in model state."
+            )
 
     logger.info("Finally, we merging state dict to fellowing tensors.")
     for k, v in state_dict_to_save.items():
@@ -100,7 +114,10 @@ def main():
         model_class=model_class, state_dict_list=tp_state_dict_list, config=config
     )
     logger.info("Saving")
-    paddle.save(state_dict_to_save, os.path.join(args.model_name_or_path, "model_state.pdparams"))
+    paddle.save(
+        state_dict_to_save,
+        os.path.join(args.model_name_or_path, "model_state.pdparams"),
+    )
 
 
 if __name__ == "__main__":

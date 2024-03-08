@@ -14,16 +14,16 @@
 
 import os
 
+from paddlenlp.peft import LoRAConfig, LoRAModel
+from paddlenlp.trainer import PdArgumentParser, get_last_checkpoint, set_seed
+from paddlenlp.transformers import AutoTokenizer
+from paddlenlp.utils.log import logger
+
 from arguments import DataArguments, ModelArguments
 from arguments import RetrieverTrainingArguments as TrainingArguments
 from data import EmbedCollator, TrainDatasetForEmbedding
 from modeling import BloomBiEncoderModel, LlamaBiEncoderModel
 from utils import BiTrainer
-
-from paddlenlp.peft import LoRAConfig, LoRAModel
-from paddlenlp.trainer import PdArgumentParser, get_last_checkpoint, set_seed
-from paddlenlp.transformers import AutoTokenizer
-from paddlenlp.utils.log import logger
 
 
 def main():
@@ -50,7 +50,10 @@ def main():
             f"Output directory ({training_args.output_dir}) already exists and is not empty. Use --overwrite_output_dir to overcome."
         )
 
-    if training_args.pipeline_parallel_degree > 1 and training_args.negatives_cross_device:
+    if (
+        training_args.pipeline_parallel_degree > 1
+        and training_args.negatives_cross_device
+    ):
         raise ValueError("Pipeline parallelism does not support cross batch negatives.")
     # Setup logging
     logger.warning(
@@ -63,14 +66,20 @@ def main():
 
     # Detecting last checkpoint.
     last_checkpoint = None
-    if os.path.isdir(training_args.output_dir) and training_args.do_train and not training_args.overwrite_output_dir:
+    if (
+        os.path.isdir(training_args.output_dir)
+        and training_args.do_train
+        and not training_args.overwrite_output_dir
+    ):
         last_checkpoint = get_last_checkpoint(training_args.output_dir)
         if last_checkpoint is None and len(os.listdir(training_args.output_dir)) > 1:
             raise ValueError(
                 f"Output directory ({training_args.output_dir}) already exists and is not empty. "
                 "Use --overwrite_output_dir to overcome."
             )
-        elif last_checkpoint is not None and training_args.resume_from_checkpoint is None:
+        elif (
+            last_checkpoint is not None and training_args.resume_from_checkpoint is None
+        ):
             logger.info(
                 f"Checkpoint detected, resuming training at {last_checkpoint}. To avoid this behavior, change "
                 "the `--output_dir` or add `--overwrite_output_dir` to train from scratch."
@@ -78,7 +87,9 @@ def main():
     # Set seed
     set_seed(training_args.seed)
     tokenizer = AutoTokenizer.from_pretrained(
-        model_args.tokenizer_name if model_args.tokenizer_name else model_args.model_name_or_path,
+        model_args.tokenizer_name
+        if model_args.tokenizer_name
+        else model_args.model_name_or_path,
         cache_dir=model_args.cache_dir,
         use_fast=False,
     )
@@ -98,7 +109,10 @@ def main():
             temperature=training_args.temperature,
             use_flash_attention=model_args.use_flash_attention,
         )
-    elif "llama" in model_args.model_name_or_path or "baichuan" in model_args.model_name_or_path:
+    elif (
+        "llama" in model_args.model_name_or_path
+        or "baichuan" in model_args.model_name_or_path
+    ):
         model = LlamaBiEncoderModel.from_pretrained(
             pretrained_model_name_or_path=model_args.model_name_or_path,
             dtype=dtype,
@@ -128,7 +142,10 @@ def main():
                 v.stop_gradient = True
 
     if training_args.fine_tune_type == "lora":
-        if "llama" in model_args.model_name_or_path or "baichuan" in model_args.model_name_or_path:
+        if (
+            "llama" in model_args.model_name_or_path
+            or "baichuan" in model_args.model_name_or_path
+        ):
             target_modules = [".*q_proj.*", ".*k_proj.*", ".*v_proj.*"]
         else:
             target_modules = [".*query_key_value.*"]
@@ -155,13 +172,17 @@ def main():
         args=training_args,
         train_dataset=train_dataset,
         data_collator=EmbedCollator(
-            tokenizer, query_max_len=data_args.query_max_len, passage_max_len=data_args.passage_max_len
+            tokenizer,
+            query_max_len=data_args.query_max_len,
+            passage_max_len=data_args.passage_max_len,
         ),
         tokenizer=tokenizer,
     )
     if training_args.do_train:
         train_result = trainer.train(resume_from_checkpoint=last_checkpoint)
-        trainer.save_model(merge_tensor_parallel=training_args.tensor_parallel_degree > 1)
+        trainer.save_model(
+            merge_tensor_parallel=training_args.tensor_parallel_degree > 1
+        )
         trainer.log_metrics("train", train_result.metrics)
         trainer.save_metrics("train", train_result.metrics)
         trainer.save_state()

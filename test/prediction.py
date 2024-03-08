@@ -14,10 +14,10 @@
 
 import numpy as np
 import paddle
-from modeling import BloomBiEncoderModel, LlamaBiEncoderModel
-
 from paddlenlp.data import DataCollatorWithPadding
 from paddlenlp.transformers import AutoTokenizer
+
+from modeling import BloomBiEncoderModel, LlamaBiEncoderModel
 
 
 class Eval_modle:
@@ -69,7 +69,9 @@ class Eval_modle:
         """
         self._tokenizer = AutoTokenizer.from_pretrained(self.model)
         self._tokenizer.padding_side = "right"
-        self.pad_token_id = self._tokenizer.convert_tokens_to_ids(self._tokenizer.pad_token)
+        self.pad_token_id = self._tokenizer.convert_tokens_to_ids(
+            self._tokenizer.pad_token
+        )
         # Fix windows dtype bug
         self._collator = DataCollatorWithPadding(self._tokenizer, return_tensors="pd")
 
@@ -85,7 +87,11 @@ class Eval_modle:
             if max_seq_len is None:
                 max_seq_len = self.max_seq_len
             tokenized_inputs = self._tokenizer(
-                to_tokenize[0], padding=True, truncation=True, max_seq_len=max_seq_len, return_attention_mask=True
+                to_tokenize[0],
+                padding=True,
+                truncation=True,
+                max_seq_len=max_seq_len,
+                return_attention_mask=True,
             )
             return tokenized_inputs
 
@@ -108,7 +114,9 @@ class Eval_modle:
         # inputs = inputs[0]
         if isinstance(inputs, str):
             if len(inputs) == 0:
-                raise ValueError("Invalid inputs, input text should not be empty text, please check your input.")
+                raise ValueError(
+                    "Invalid inputs, input text should not be empty text, please check your input."
+                )
             inputs = [inputs]
         elif isinstance(inputs, list):
             if not (isinstance(inputs[0], str) and len(inputs[0].strip()) > 0):
@@ -117,7 +125,9 @@ class Eval_modle:
                 )
         else:
             raise TypeError(
-                "Invalid inputs, input text should be str or list of str, but type of {} found!".format(type(inputs))
+                "Invalid inputs, input text should be str or list of str, but type of {} found!".format(
+                    type(inputs)
+                )
             )
         return inputs
 

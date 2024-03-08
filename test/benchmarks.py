@@ -46,7 +46,7 @@ class PaddleModel:
         max_seq_len=512,
         sep=" ",
         pooling_mode="mean_tokens",
-        **kwargs
+        **kwargs,
     ):
         self.query_model = Eval_modle(
             model=query_model,
@@ -57,7 +57,9 @@ class PaddleModel:
         self.sep = sep
 
     def encode_queries(self, queries: List[str], batch_size: int, **kwargs):
-        return self.query_model.run(queries, batch_size=batch_size, max_seq_len=args.query_max_length, **kwargs)
+        return self.query_model.run(
+            queries, batch_size=batch_size, max_seq_len=args.query_max_length, **kwargs
+        )
 
     def encode_corpus(self, corpus: List[Dict[str, str]], batch_size: int, **kwargs):
         if type(corpus) is dict:
@@ -69,10 +71,17 @@ class PaddleModel:
             ]
         else:
             sentences = [
-                (doc["title"] + self.sep + doc["text"]).strip() if "title" in doc else doc["text"].strip()
+                (doc["title"] + self.sep + doc["text"]).strip()
+                if "title" in doc
+                else doc["text"].strip()
                 for doc in corpus
             ]
-        return self.query_model.run(sentences, batch_size=batch_size, max_seq_len=args.passage_max_length, **kwargs)
+        return self.query_model.run(
+            sentences,
+            batch_size=batch_size,
+            max_seq_len=args.passage_max_length,
+            **kwargs,
+        )
 
 
 class T2RRetrieval(AbsTaskRetrieval):
@@ -102,32 +111,45 @@ class T2RRetrieval(AbsTaskRetrieval):
         corpus_chunk_size=None,
         target_devices=None,
         score_function="cos_sim",
-        **kwargs
+        **kwargs,
     ):
         from beir.retrieval.evaluation import EvaluateRetrieval
 
         if not self.data_loaded:
             self.load_data()
-        corpus, queries, relevant_docs = self.corpus[split], self.queries[split], self.relevant_docs[split]
+        corpus, queries, relevant_docs = (
+            self.corpus[split],
+            self.queries[split],
+            self.relevant_docs[split],
+        )
 
-        from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
+        from beir.retrieval.search.dense import \
+            DenseRetrievalExactSearch as DRES
 
         model = PaddleModel(model_query, model_corpus, model_type)
 
         model = DRES(
             model,
             batch_size=batch_size,
-            corpus_chunk_size=corpus_chunk_size if corpus_chunk_size is not None else 50000,
+            corpus_chunk_size=corpus_chunk_size
+            if corpus_chunk_size is not None
+            else 50000,
             **kwargs,
         )
-        retriever = EvaluateRetrieval(model, score_function=score_function)  # or "cos_sim" or "dot"
+        retriever = EvaluateRetrieval(
+            model, score_function=score_function
+        )  # or "cos_sim" or "dot"
         start_time = time.time()
         results = retriever.retrieve(corpus, queries)
         end_time = time.time()
         print("Time taken to retrieve: {:.2f} seconds".format(end_time - start_time))
 
-        ndcg, _map, recall, precision = retriever.evaluate(relevant_docs, results, retriever.k_values)
-        mrr = retriever.evaluate_custom(relevant_docs, results, retriever.k_values, "mrr")
+        ndcg, _map, recall, precision = retriever.evaluate(
+            relevant_docs, results, retriever.k_values
+        )
+        mrr = retriever.evaluate_custom(
+            relevant_docs, results, retriever.k_values, "mrr"
+        )
 
         scores = {
             **{f"ndcg_at_{k.split('@')[1]}": v for (k, v) in ndcg.items()},
@@ -183,4 +205,9 @@ def load_t2ranking_for_retraviel(num_max_passages: float):
 
 
 tasks = T2RRetrieval(num_max_passages=10000)
-tasks.evaluate(model_query=args.query_model, model_corpus=args.passage_model, model_type=args.model_type, split="dev")
+tasks.evaluate(
+    model_query=args.query_model,
+    model_corpus=args.passage_model,
+    model_type=args.model_type,
+    split="dev",
+)

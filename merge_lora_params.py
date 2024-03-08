@@ -14,18 +14,29 @@
 import argparse
 
 import paddle
-
 from paddlenlp.peft import LoRAConfig, LoRAModel
 from paddlenlp.transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_name_or_path", default=None, required=True, help="The directory of pretrained model.")
     parser.add_argument(
-        "--lora_path", default=None, required=True, help="The directory of LoRA parameters. Default to None"
+        "--model_name_or_path",
+        default=None,
+        required=True,
+        help="The directory of pretrained model.",
     )
-    parser.add_argument("--merge_model_path", default=None, help="The directory of merged parameters. Default to None")
+    parser.add_argument(
+        "--lora_path",
+        default=None,
+        required=True,
+        help="The directory of LoRA parameters. Default to None",
+    )
+    parser.add_argument(
+        "--merge_model_path",
+        default=None,
+        help="The directory of merged parameters. Default to None",
+    )
     parser.add_argument("--device", type=str, default="gpu", help="Device")
     return parser.parse_args()
 
@@ -41,7 +52,9 @@ def merge():
         args.model_name_or_path,
         dtype=dtype,
     )
-    model = LoRAModel.from_pretrained(model=model, lora_path=args.lora_path, lora_config=lora_config)
+    model = LoRAModel.from_pretrained(
+        model=model, lora_path=args.lora_path, lora_config=lora_config
+    )
     model.eval()
     if args.merge_model_path is None:
         args.merge_model_path = args.lora_path
