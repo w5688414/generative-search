@@ -22,7 +22,8 @@ from paddlenlp.utils.log import logger
 from arguments import DataArguments, ModelArguments
 from arguments import RetrieverTrainingArguments as TrainingArguments
 from data import EmbedCollator, TrainDatasetForEmbedding
-from modeling import BloomBiEncoderModel, LlamaBiEncoderModel
+from models.modeling import (BiEncoderModel, BloomBiEncoderModel,
+                             LlamaBiEncoderModel)
 from utils import BiTrainer
 
 
@@ -125,6 +126,18 @@ def main():
             temperature=training_args.temperature,
             use_flash_attention=model_args.use_flash_attention,
         )
+    else:
+        model = BiEncoderModel.from_pretrained(
+            pretrained_model_name_or_path=model_args.model_name_or_path,
+            model_name=model_args.model_name_or_path,
+            normalized=model_args.normalized,
+            sentence_pooling_method=training_args.sentence_pooling_method,
+            negatives_cross_device=training_args.negatives_cross_device,
+            temperature=training_args.temperature,
+            use_inbatch_neg=training_args.use_inbatch_neg,
+            matryoshka_dims=training_args.matryoshka_dims,
+            matryoshka_loss_weights=training_args.matryoshka_loss_weights,
+        )
 
     if training_args.fix_position_embedding:
         for k, v in model.named_parameters():
@@ -167,6 +180,7 @@ def main():
         passage_max_len=data_args.passage_max_len,
         is_batch_negative=model_args.is_batch_negative,
     )
+
     trainer = BiTrainer(
         model=model,
         args=training_args,

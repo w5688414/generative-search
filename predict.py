@@ -14,13 +14,13 @@
 
 import paddle
 import paddle.nn.functional as F
+from modeling import BloomBiEncoderModel
 from paddlenlp.trainer import PdArgumentParser
 from paddlenlp.transformers import AutoTokenizer
 from paddlenlp.utils.log import logger
 
 from arguments import DataArguments, ModelArguments
 from arguments import RetrieverTrainingArguments as TrainingArguments
-from modeling import BloomBiEncoderModel
 
 
 def main():

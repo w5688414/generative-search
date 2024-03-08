@@ -14,10 +14,9 @@
 import os
 
 import paddle
+from modeling import BloomBiEncoderModel, LlamaBiEncoderModel
 from paddlenlp.transformers import BloomConfig, LlamaConfig
 from paddlenlp.utils.log import logger
-
-from modeling import BloomBiEncoderModel, LlamaBiEncoderModel
 
 
 def parse_arguments():

@@ -14,7 +14,7 @@
 
 import os
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import List, Optional
 
 from paddlenlp.trainer import TrainingArguments
 
@@ -108,4 +108,15 @@ class RetrieverTrainingArguments(TrainingArguments):
     fine_tune_type: str = field(
         default="sft",
         metadata={"help": "fine-tune type for retrieval,eg: sft, bitfit, lora"},
+    )
+    use_inbatch_neg: bool = field(
+        default=False, metadata={"help": "use passages in the same batch as negatives"}
+    )
+    matryoshka_dims: List[int] = field(
+        default_factory=lambda: [64, 128, 256, 512, 768],
+        metadata={"help": "matryoshka dims"},
+    )
+    matryoshka_loss_weights: List[float] = field(
+        default_factory=lambda: [1, 1, 1, 1, 1],
+        metadata={"help": "matryoshka loss weights"},
     )

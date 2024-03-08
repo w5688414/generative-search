@@ -55,7 +55,7 @@ python merge_tp_params.py --model_name_or_path outputs/checkpoint-30
 评估脚本：
 
 ```
-python tests/benckmark_test.py --model_type bloom \
+python tests/benckmark.py --model_type bloom \
                               --query_model outputs/checkpoint-30 \
                               --passage_model outputs/checkpoint-30 \
                               --query_max_length 64 \

@@ -11,13 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
+import sys
 
 import numpy as np
 import paddle
 from paddlenlp.data import DataCollatorWithPadding
 from paddlenlp.transformers import AutoTokenizer
 
-from modeling import BloomBiEncoderModel, LlamaBiEncoderModel
+sys.path.append(os.path.abspath("."))
+from models.modeling import (BiEncoderModel, BloomBiEncoderModel,
+                             LlamaBiEncoderModel)
 
 
 class Eval_modle:
@@ -60,6 +64,12 @@ class Eval_modle:
                 normalized=True,
                 tensor_parallel_degree=0,
             )
+        elif self.model_type in ["bert", "roberta", "ernie"]:
+            self._model = BiEncoderModel(
+                model_name=self.model, normalized=True, sentence_pooling_method="cls"
+            )
+        else:
+            raise NotImplementedError
 
         self._model.eval()
 

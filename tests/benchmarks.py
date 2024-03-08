@@ -26,7 +26,7 @@ csv.field_size_limit(500 * 1024 * 1024)
 
 # yapf: disable
 parser = argparse.ArgumentParser()
-parser.add_argument('--model_type', choices=['bloom', 'llama', 'baichuan'], default="bloom", help="The model types")
+parser.add_argument('--model_type', choices=['bloom', 'llama', 'baichuan', "bert", 'roberta', 'ernie'], default="bloom", help="The model types")
 parser.add_argument("--query_model", default="bigscience/bloomz-7b1-mt", type=str, help="The ann index name")
 parser.add_argument("--passage_model", default="bigscience/bloomz-7b1-mt", type=str, help="The ann index name")
 parser.add_argument("--query_max_length", default=64, type=int, help="Number of element to retrieve from embedding search")
