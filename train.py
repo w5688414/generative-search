@@ -128,12 +128,12 @@ def main():
         )
     else:
         model = BiEncoderModel.from_pretrained(
-            pretrained_model_name_or_path=model_args.model_name_or_path,
-            model_name=model_args.model_name_or_path,
+            model_name_or_path=model_args.model_name_or_path,
             normalized=model_args.normalized,
             sentence_pooling_method=training_args.sentence_pooling_method,
             negatives_cross_device=training_args.negatives_cross_device,
             temperature=training_args.temperature,
+            margin=training_args.margin,
             use_inbatch_neg=training_args.use_inbatch_neg,
             matryoshka_dims=training_args.matryoshka_dims,
             matryoshka_loss_weights=training_args.matryoshka_loss_weights,

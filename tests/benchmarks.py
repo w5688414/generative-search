@@ -13,6 +13,7 @@
 # limitations under the License.
 import argparse
 import csv
+import glob
 import math
 import time
 from collections import defaultdict
@@ -31,6 +32,8 @@ parser.add_argument("--query_model", default="bigscience/bloomz-7b1-mt", type=st
 parser.add_argument("--passage_model", default="bigscience/bloomz-7b1-mt", type=str, help="The ann index name")
 parser.add_argument("--query_max_length", default=64, type=int, help="Number of element to retrieve from embedding search")
 parser.add_argument("--passage_max_length", default=512, type=int, help="The embedding_dim of index")
+parser.add_argument("--evaluate_all", action="store_true", help="Evaluate all checkpoints")
+parser.add_argument("--checkpoint_dir", default="checkpoints", type=str, help="The checkpoints root directory")
 
 args = parser.parse_args()
 # yapf: enable
@@ -204,10 +207,23 @@ def load_t2ranking_for_retraviel(num_max_passages: float):
     return corpus, valid_queries, valid_qrels
 
 
-tasks = T2RRetrieval(num_max_passages=10000)
-tasks.evaluate(
-    model_query=args.query_model,
-    model_corpus=args.passage_model,
-    model_type=args.model_type,
-    split="dev",
-)
+if __name__ == "__main__":
+    tasks = T2RRetrieval(num_max_passages=10000)
+    if args.evaluate_all:
+        checkpoints = glob.glob(f"{args.checkpoint_dir}/checkpoint-*")
+        checkpoints.sort()
+        for checkpoint in checkpoints:
+            tasks.evaluate(
+                model_query=checkpoint,
+                model_corpus=checkpoint,
+                model_type=args.model_type,
+                split="dev",
+            )
+
+    else:
+        tasks.evaluate(
+            model_query=args.query_model,
+            model_corpus=args.passage_model,
+            model_type=args.model_type,
+            split="dev",
+        )

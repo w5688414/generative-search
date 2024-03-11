@@ -98,6 +98,7 @@ class RetrieverTrainingArguments(TrainingArguments):
         default=False, metadata={"help": "share negatives across devices"}
     )
     temperature: Optional[float] = field(default=0.02)
+    margin: Optional[float] = field(default=0.2)
     fix_position_embedding: bool = field(
         default=False, metadata={"help": "Freeze the parameters of position embeddings"}
     )

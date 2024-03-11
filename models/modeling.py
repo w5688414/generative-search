@@ -322,7 +322,7 @@ class LlamaBiEncoderModel(LlamaPretrainedModel):
 class BiEncoderModel(PretrainedModel):
     def __init__(
         self,
-        model_name: str = None,
+        model_name_or_path: str = None,
         normalized: bool = False,
         sentence_pooling_method: str = "cls",
         negatives_cross_device: bool = False,
@@ -333,8 +333,8 @@ class BiEncoderModel(PretrainedModel):
         matryoshka_loss_weights: Optional[List[float]] = None,
     ):
         super().__init__()
-        self.model = AutoModel.from_pretrained(model_name)
-        self.model_config = AutoConfig.from_pretrained(model_name)
+        self.model = AutoModel.from_pretrained(model_name_or_path)
+        self.model_config = AutoConfig.from_pretrained(model_name_or_path)
         self.cross_entropy = nn.CrossEntropyLoss(reduction="mean")
 
         self.normalized = normalized

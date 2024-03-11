@@ -65,9 +65,12 @@ class Eval_modle:
                 tensor_parallel_degree=0,
             )
         elif self.model_type in ["bert", "roberta", "ernie"]:
-            self._model = BiEncoderModel(
-                model_name=self.model, normalized=True, sentence_pooling_method="cls"
+            self._model = BiEncoderModel.from_pretrained(
+                model_name_or_path=self.model,
+                normalized=True,
+                sentence_pooling_method="cls",
             )
+            print(f"loading checkpoints {self.model}")
         else:
             raise NotImplementedError
 
