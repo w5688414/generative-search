@@ -135,8 +135,12 @@ def main():
             temperature=training_args.temperature,
             margin=training_args.margin,
             use_inbatch_neg=training_args.use_inbatch_neg,
-            matryoshka_dims=training_args.matryoshka_dims,
-            matryoshka_loss_weights=training_args.matryoshka_loss_weights,
+            matryoshka_dims=training_args.matryoshka_dims
+            if training_args.use_matryoshka
+            else None,
+            matryoshka_loss_weights=training_args.matryoshka_loss_weights
+            if training_args.use_matryoshka
+            else None,
         )
 
     if training_args.fix_position_embedding:

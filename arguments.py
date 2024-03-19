@@ -113,6 +113,11 @@ class RetrieverTrainingArguments(TrainingArguments):
     use_inbatch_neg: bool = field(
         default=False, metadata={"help": "use passages in the same batch as negatives"}
     )
+
+    use_matryoshka: bool = field(
+        default=False, metadata={"help": "use matryoshka for flexible embedding size"}
+    )
+
     matryoshka_dims: List[int] = field(
         default_factory=lambda: [64, 128, 256, 512, 768],
         metadata={"help": "matryoshka dims"},
