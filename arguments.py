@@ -36,12 +36,6 @@ class ModelArguments:
             "help": "Pretrained tokenizer name or path if not the same as model_name"
         },
     )
-    cache_dir: Optional[str] = field(
-        default=None,
-        metadata={
-            "help": "Where do you want to store the pretrained models downloaded from s3"
-        },
-    )
 
     normalized: bool = field(default=True)
     use_flash_attention: bool = field(

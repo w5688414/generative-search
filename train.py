@@ -91,7 +91,6 @@ def main():
         model_args.tokenizer_name
         if model_args.tokenizer_name
         else model_args.model_name_or_path,
-        cache_dir=model_args.cache_dir,
         use_fast=False,
     )
     tokenizer.padding_side = "right"
